@@ -103,7 +103,8 @@ let rightPressed = false;
 
 
 const sun = new Vector3();
-const light = new HemisphereLight(0xffffff, 0x444444, 1.0);
+// mudança no paramento estava 1, agora está 3.0 deixou a imagem mais realista
+const light = new HemisphereLight(0xffffff, 0x444444, 3.0);
 light.position.set(0, 1, 0);
 scene.add(light);
 
