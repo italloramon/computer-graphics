@@ -10,7 +10,7 @@ import {
     Vector3,
     VectorKeyframeTrack
 } from "three";
-import {challengeRows, ObjectType, rocketModel} from "./objects";
+import {challengeRows, ObjectType, rocketModel, invincibilityModel} from "./objects";
 import {crystalUiElement, shieldUiElement} from "./ui";
 import {radToDeg} from "three/src/math/MathUtils";
 import {destructionBits, endLevel, scene, sceneConfiguration} from "../game";
@@ -46,8 +46,10 @@ export const detectCollisions = () => {
                         switch (type) {
                             // If it was a rock...
                             case ObjectType.ROCK:
-                                // ...remove one shield from the players' score
-                                sceneConfiguration.data.shieldsCollected--;
+                                // ...remove one shield from the players' score if invincibility is down
+                                if (!sceneConfiguration.isInvincible){
+                                    sceneConfiguration.data.shieldsCollected--;
+                                }
                                 // Update the UI with the new count of shields
                                 shieldUiElement.innerText = String(sceneConfiguration.data.shieldsCollected);
                                 // If the player has less than 0 shields...
@@ -78,6 +80,25 @@ export const detectCollisions = () => {
                                 // Update the UI with the new count of shields, and increment the count of
                                 // currently collected shields
                                 shieldUiElement.innerText = String(++sceneConfiguration.data.shieldsCollected);
+                                break;
+                            // If it is an invincibility item
+                            case ObjectType.INVINCIBILITY:
+                                sceneConfiguration.isInvincible = true;
+                                scene.add(invincibilityModel);
+                                setTimeout(() => {
+                                    sceneConfiguration.isInvincible = false;
+                                    scene.remove(invincibilityModel);
+                                }, 5000);
+                                break;
+                            // If it is a ring
+                            case ObjectType.RING:
+                                sceneConfiguration.isFast = true;
+                                let speed = sceneConfiguration.speed;
+                                sceneConfiguration.speed *= 2;
+                                setTimeout(() => {
+                                    sceneConfiguration.isFast = false;
+                                    sceneConfiguration.speed =  speed;
+                                    }, 2500);
                                 break;
                         }
                     }

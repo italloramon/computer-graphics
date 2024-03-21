@@ -13,6 +13,8 @@ export let cliffsModel: Object3D;
 export let crystalModel: Object3D;
 export let rockModel: Object3D;
 export let shieldModel: Object3D;
+export let invincibilityModel: Object3D;
+export let ringModel: Object3D;
 
 const gltfLoader = new GLTFLoader();
 
@@ -24,6 +26,8 @@ const rockGLTF = 'static/models/glowing_rock/scene.gltf';
 const shieldGLTF = 'static/models/shield_item/scene.gltf';
 const starterBayGLTF = 'static/models/start_bay/scene.gltf';
 const mothershipGLTF = 'static/models/spaceship_nortend/scene.gltf';
+const invincibilityGLTF = 'static/models/invincibility/scene.gltf';
+const ringGLTF = 'static/models/ring/scene.gltf';
 
 export const objectsInit = async () => {
     cliffsModel = (await gltfLoader.loadAsync(cliffsGLTF)).scene.children[0];
@@ -39,6 +43,10 @@ export const objectsInit = async () => {
     starterBay = (await gltfLoader.loadAsync(starterBayGLTF)).scene;
     setProgress('Loading mothership...');
     mothershipModel = (await gltfLoader.loadAsync(mothershipGLTF)).scene;
+    setProgress('Loading invincibility model...');
+    invincibilityModel = (await gltfLoader.loadAsync(invincibilityGLTF)).scene;
+    setProgress('Loading ring model...');
+    ringModel = (await gltfLoader.loadAsync(ringGLTF)).scene;
 }
 
 export const addBackgroundBit = (count: number, horizonSpawn: boolean = false) => {
@@ -74,17 +82,30 @@ export const addChallengeRow = (count: number, horizonSpawn: boolean = false) =>
         if (random < 2) {
             let crystal = addCrystal(i);
             rowGroup.add(crystal);
-
         }
         // If it's less than 4, spawn a rock
         else if (random < 4) {
             let rock = addRock(i);
             rowGroup.add(rock);
         }
-       // but if it's more than 9, spawn a shield
+       // but if it's more than 9, spawn a special items
         else if (random > 9) {
-            let shield = addShield(i);
-            rowGroup.add(shield);
+            // 60% it is a shield
+            let item = Math.random() * 10 
+            if (item <= 6) {
+                let shield = addShield(i);
+                rowGroup.add(shield);
+            } 
+            // 20% it is an invinvibility item
+            else if (item > 6 && item <= 8){
+                let invincibility = addInvincibility(i);
+                rowGroup.add(invincibility);
+            } 
+            // 20% it is a ring item
+            else {
+                let ring = addRing(i);
+                rowGroup.add(ring);
+            }
         }
     }
     // Add the row to the challengeRows array to keep track of it, and so we can clean them up later
@@ -116,10 +137,33 @@ const addShield = (rowCell: number) => {
     return shield;
 }
 
+const addInvincibility = (rowCell: number) => {
+    let invincibility = invincibilityModel.clone();
+    invincibility.position.x = rowCell * 11 + 32;
+    //invincibility.rotateX(Math.PI / 2);
+    invincibility.scale.set(3, 3, 3);
+    invincibility.position.y = 8;
+    invincibility.userData.objectType = ObjectType.INVINCIBILITY;
+    return invincibility;
+}
+
+const addRing = (rowCell: number) => {
+    let ring = ringModel.clone();
+    ring.position.x = rowCell * 11 - 20;
+    ring.rotateX(Math.PI / 2);
+    ring.scale.set(3, 3, 3);
+    ring.position.y = 8;
+    ring.userData.objectType = ObjectType.RING;
+    return ring;
+}
+
+
 export enum ObjectType {
     ROCK,
     CRYSTAL,
-    SHIELD_ITEM
+    SHIELD_ITEM,
+    INVINCIBILITY,
+    RING
 }
 
 interface ChallengeRow {
