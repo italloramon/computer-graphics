@@ -50,6 +50,7 @@ import {
     environmentBits, mothershipModel,
     objectsInit,
     rocketModel,
+    invincibilityModel,
     starterBay
 } from "./game/objects";
 import {isTouchDevice} from "./isTouchDevice";
@@ -103,8 +104,7 @@ let rightPressed = false;
 
 
 const sun = new Vector3();
-//mudei o para função  HemisphereLight (x, x, era 1.0)
-const light = new HemisphereLight(0xffffff, 0x444444, 3.0);
+const light = new HemisphereLight(0xffffff, 0x444444, 1.0);
 light.position.set(0, 1, 0);
 scene.add(light);
 
@@ -140,7 +140,11 @@ export const sceneConfiguration = {
     /// How many 'challenge rows' are in the scene (the rows that have rocks, shields, or crystals in them).
     challengeRowCount: 0,
     /// The current speed of the ship
-    speed: 0.0
+    speed: 0.0,
+    /// Set the status of invincibility
+    isInvincible: false,
+    /// Set fast status
+    isFast: false
 }
 
 
@@ -170,12 +174,17 @@ const animate = () => {
     // Clamp the final position of the rocket to an allowable region
     rocketModel.position.x = clamp(rocketModel.position.x, -20, 25);
 
+    if (sceneConfiguration.isInvincible) {
+        invincibilityModel.position.x = rocketModel.position.x + 20;
+        invincibilityModel.position.y = rocketModel.position.y;
+        invincibilityModel.position.z = rocketModel.position.z - 5;
+    }
 
     if (sceneConfiguration.rocketMoving) {
+        //console.log(sceneConfiguration.speed);
         progressUiElement.style.width = String(sceneConfiguration.coursePercentComplete() * 200) + 'px';
         sceneConfiguration.speed += 0.001;
         sceneConfiguration.courseProgress += sceneConfiguration.speed;
-
         garbageCollector();
     }
 
@@ -408,6 +417,13 @@ async function init() {
     rocketModel.scale.set(0.3, 0.3, 0.3);
     scene.add(rocketModel);
     scene.add(mothershipModel);
+
+    // Invincibility shield
+    invincibilityModel.rotateX(Math.PI / 2);
+    
+    invincibilityModel.position.x = rocketModel.position.x + 20;
+    invincibilityModel.position.y = rocketModel.position.y + 10;
+    invincibilityModel.position.z = rocketModel.position.z + 65;
 
     // Set the scale and location for our mothership (above the player)
     mothershipModel.position.y = 200;
